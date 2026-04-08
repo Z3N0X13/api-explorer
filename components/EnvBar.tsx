@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useEnvironmentsStore } from "@/store/environments";
+import Select from "@/components/ui/Select";
 
 export default function EnvBar() {
   const {
@@ -35,18 +36,15 @@ export default function EnvBar() {
         }}
       >
         <span style={{ fontSize: 11, color: "var(--muted)" }}>ENV</span>
-        <select
+        <Select
           value={activeEnvId ?? ""}
-          onChange={(e) => setActiveEnv(e.target.value || null)}
-          style={{ fontSize: 12, padding: "3px 8px" }}
-        >
-          <option value="">Aucun environnement</option>
-          {environments.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name}
-            </option>
-          ))}
-        </select>
+          onChange={(val: string) => setActiveEnv(val || null)}
+          options={[
+            { value: "", label: "Aucun environnement" },
+            ...environments.map((e) => ({ value: e.id, label: e.name })),
+          ]}
+          style={{ minWidth: 160 }}
+        />
         <button
           onClick={() => setShowPanel((v) => !v)}
           style={{ padding: "3px 8px", fontSize: 11 }}

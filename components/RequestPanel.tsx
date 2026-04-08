@@ -7,6 +7,7 @@ import { useTabsStore } from "@/store/tabs";
 import { sendRequest } from "@/lib/http";
 import { interpolateRequest } from "@/lib/interpolate";
 import type { HttpMethod } from "@/types";
+import Select from "@/components/ui/Select";
 
 const METHODS: HttpMethod[] = [
   "GET",
@@ -122,22 +123,16 @@ export default function RequestPanel() {
           alignItems: "center",
         }}
       >
-        <select
+        <Select
           value={request.method}
-          onChange={(e) => setMethod(e.target.value as HttpMethod)}
-          style={{
-            width: 100,
-            fontWeight: 600,
-            color: METHOD_COLORS[request.method],
-            fontSize: 12,
-          }}
-        >
-          {METHODS.map((m) => (
-            <option key={m} value={m} style={{ color: METHOD_COLORS[m] }}>
-              {m}
-            </option>
-          ))}
-        </select>
+          onChange={(val: string) => setMethod(val as HttpMethod)}
+          options={METHODS.map((m) => ({
+            value: m,
+            label: m,
+            color: METHOD_COLORS[m],
+          }))}
+          style={{ width: 100, fontWeight: 600 }}
+        />
         <input
           value={request.url}
           onChange={(e) => setUrl(e.target.value)}
