@@ -8,6 +8,7 @@ import { sendRequest } from "@/lib/http";
 import { interpolateRequest } from "@/lib/interpolate";
 import type { HttpMethod } from "@/types";
 import Select from "@/components/ui/Select";
+import CodeEditor from "./CodeEditor";
 
 const METHODS: HttpMethod[] = [
   "GET",
@@ -298,10 +299,10 @@ export default function RequestPanel() {
               display: "flex",
               flexDirection: "column",
               height: "100%",
-              gap: 8,
+              gap: 10,
             }}
           >
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 16 }}>
               {(["none", "json", "text"] as const).map((t) => (
                 <label
                   key={t}
@@ -326,22 +327,26 @@ export default function RequestPanel() {
               ))}
             </div>
             {request.bodyType !== "none" && (
-              <textarea
-                value={request.body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder={
-                  request.bodyType === "json"
-                    ? '{\n  "key": "value"\n}'
-                    : "Corps de la requête..."
-                }
+              <div
                 style={{
                   flex: 1,
-                  minHeight: 200,
-                  fontFamily: "monospace",
-                  fontSize: 12,
-                  resize: "vertical",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  border: "1px solid var(--border)",
                 }}
-              />
+              >
+                <CodeEditor
+                  value={request.body}
+                  onChange={setBody}
+                  lang={request.bodyType === "json" ? "json" : "text"}
+                  minHeight="200px"
+                  placeholder={
+                    request.bodyType === "json"
+                      ? '{\n  "key": "value"\n}'
+                      : "Corps de la requête..."
+                  }
+                />
+              </div>
             )}
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { useRequestStore } from "@/store/request";
 import StatusBadge from "./StatusBadge";
+import CodeEditor from "./CodeEditor";
 
 function prettyJson(raw: string): string {
   try {
@@ -9,6 +10,12 @@ function prettyJson(raw: string): string {
   } catch {
     return raw;
   }
+}
+
+function detectLang(headers: Record<string, string>): "json" | "text" {
+  const ct = headers["content-type"] ?? "";
+  if (ct.includes("json")) return "json";
+  return "text";
 }
 
 function formatSize(bytes: number): string {
@@ -45,6 +52,8 @@ export default function ResponseViewer() {
           justifyContent: "center",
           color: "var(--muted)",
           background: "var(--surface)",
+          borderLeft: "1px solid var(--border)",
+          fontSize: 13,
         }}
       >
         Envoi en cours...
@@ -62,16 +71,12 @@ export default function ResponseViewer() {
           borderLeft: "1px solid var(--border)",
         }}
       >
-        <div
-          style={{
-            color: "var(--status-4xx)",
-            fontSize: 13,
-            fontFamily: "monospace",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          Erreur : {error}
-        </div>
+        <CodeEditor
+          value={`Erreur réseau :\n\n${error}`}
+          readOnly
+          lang="text"
+          minHeight="100px"
+        />
       </div>
     );
   }
@@ -88,16 +93,29 @@ export default function ResponseViewer() {
           color: "var(--muted)",
           background: "var(--surface)",
           borderLeft: "1px solid var(--border)",
-          gap: 8,
+          gap: 10,
         }}
       >
-        <span style={{ fontSize: 32, opacity: 0.2 }}>→</span>
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <path
+            d="M8 20h24M24 14l6 6-6 6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.25"
+          />
+        </svg>
         <span style={{ fontSize: 13 }}>
           Envoie une requête pour voir la réponse
         </span>
       </div>
     );
   }
+
+  const lang = detectLang(response.headers);
+  const displayBody =
+    lang === "json" ? prettyJson(response.body) : response.body;
 
   return (
     <div
@@ -125,9 +143,27 @@ export default function ResponseViewer() {
           {response.statusText}
         </span>
         <span
-          style={{ color: "var(--muted)", fontSize: 11, marginLeft: "auto" }}
+          style={{
+            marginLeft: "auto",
+            color: "var(--muted)",
+            fontSize: 11,
+            display: "flex",
+            gap: 12,
+          }}
         >
-          {response.elapsedMs} ms — {formatSize(response.size)}
+          <span
+            style={{
+              color:
+                response.elapsedMs > 1000
+                  ? "var(--status-4xx)"
+                  : response.elapsedMs > 300
+                    ? "var(--status-3xx)"
+                    : "var(--status-2xx)",
+            }}
+          >
+            {response.elapsedMs} ms
+          </span>
+          <span>{formatSize(response.size)}</span>
         </span>
       </div>
 
@@ -148,22 +184,27 @@ export default function ResponseViewer() {
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
+        <span
+          style={{
+            marginLeft: "auto",
+            alignSelf: "center",
+            fontSize: 10,
+            color: "var(--muted)",
+            fontFamily: "monospace",
+          }}
+        >
+          {lang.toUpperCase()}
+        </span>
       </div>
 
-      <div style={{ flex: 1, overflow: "auto", padding: 14 }}>
+      <div style={{ flex: 1, overflow: "auto" }}>
         {activeResponseTab === "body" && (
-          <pre
-            style={{
-              fontFamily: "monospace",
-              fontSize: 12,
-              color: "var(--text)",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-all",
-              margin: 0,
-            }}
-          >
-            {prettyJson(response.body)}
-          </pre>
+          <CodeEditor
+            value={displayBody}
+            readOnly
+            lang={lang}
+            minHeight="100%"
+          />
         )}
         {activeResponseTab === "headers" && (
           <table
@@ -174,7 +215,7 @@ export default function ResponseViewer() {
                 <tr key={k} style={{ borderBottom: "1px solid var(--border)" }}>
                   <td
                     style={{
-                      padding: "5px 8px",
+                      padding: "6px 14px",
                       color: "var(--muted)",
                       width: "35%",
                       fontFamily: "monospace",
@@ -184,7 +225,7 @@ export default function ResponseViewer() {
                   </td>
                   <td
                     style={{
-                      padding: "5px 8px",
+                      padding: "6px 14px",
                       color: "var(--text)",
                       fontFamily: "monospace",
                       wordBreak: "break-all",
