@@ -1,5 +1,6 @@
 "use client";
 
+import AiPanel from "@/components/AiPanel";
 import CollectionSidebar from "@/components/CollectionsSidebar";
 import EnvBar from "@/components/EnvBar";
 import RequestPanel from "@/components/RequestPanel";
@@ -67,6 +68,7 @@ export default function HomePage() {
           <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
             <RequestPanel />
             <ResponseViewer />
+            <AiPanel />
           </div>
         </div>
       </div>
